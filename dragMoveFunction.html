@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+	<style type="text/css">
+		*{margin:0;padding:0;}
+		body{
+			position: relative;
+			width: 100%;
+			height: 100%;
+		}
+		canvas{
+			padding: 0;
+			background: #abcdef;
+			display: block;
+		}
+		#pop{
+			width: 100%;
+			height:100%;
+			background: rgba(0,0,0,.6);
+			position: fixed;
+			top:0;
+			left:0;
+		}
+		.pop_box{
+			width: 80%;
+			height: 30%;
+			position: absolute;
+			top:0;
+			left:0;
+			bottom:0;
+			right:0;
+			margin:auto;
+			background: #fff;
+			transform:rotate(90deg);
+		}
+		img{
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<!-- <div id="pop">
+		<div id="pop_box" class="pop_box">
+			
+		</div>
+	</div> -->
+	<canvas id="canvas"></canvas>
+	<img id="bg" src="bg.jpg">
+</body>
+	<script type="text/javascript">
+		var vw = window.innerWidth;
+		var vh = window.innerHeight;
+		var DURATION = 10,Y = 0;
+		var TOUCHEND = {};
+		var list = [{
+			img:document.getElementById("bg"),
+			x:0,
+			y:0,
+			width:4.5*vw,
+			height:vw,
+			reSpeed:15,
+			name:"bg",
+			click:false
+		},{
+			x:2*vw/3,
+			y:2*vh/3,
+			width:65,
+			height:65,
+			reSpeed:-5,
+			color:"pink",
+			name:"big",
+			click:true,
+			type:"circle"
+		},{
+			x:vw/4,
+			y:7*vh/8,
+			width:40,
+			height:40,
+			reSpeed:40,
+			color:"red",
+			name:"small",
+			click:true,
+			type:"circle"
+		},{
+			x:vw/2,
+			y:7*vh/3,
+			width:50,
+			height:50,
+			reSpeed:50,
+			color:"green",
+			name:"center",
+			click:true,
+			type:"circle"
+		},{
+			x:vw/2,
+			y:3*vh,
+			width:45,
+			height:45,
+			reSpeed:35,
+			color:"blue",
+			name:"last",
+			click:false,
+			type:"circle"
+		},{
+			x:vw/2,
+			y:8*vw,
+			width:10,
+			height:10,
+			reSpeed:50,
+			color:"aqua",
+			name:"little",
+			click:true,
+			type:"circle"
+		}]
+
+
+		var canvas = document.getElementById("canvas");
+		canvas.width = vw;
+		canvas.height = vh;
+		var ctx = canvas.getContext("2d");
+
+		var canvasHalfX = canvas.width/2;
+		var canvasHalfY = canvas.height/2;
+
+		var mouseY = 0;
+		var mouseYOnMouseDown = 0;
+		var targetYDistance = 0;
+		var targetYDistanceOnMouseDown = 0;
+
+		function down (event){
+			event.preventDefault();
+			TOUCHEND = {x:event.touches[0].clientX,y:event.touches[0].clientY};
+
+			canvas.addEventListener( 'touchmove', move, false );
+			canvas.addEventListener( 'touchend', canvasClick, false );
+
+			mouseYOnMouseDown = event.touches[0].clientY - canvasHalfX;
+			targetYDistanceOnMouseDown = targetYDistance;
+			
+		};
+
+		function move( event ) {
+			mouseY = event.touches[0].clientY - canvasHalfX;
+			targetYDistance = targetYDistanceOnMouseDown + ( mouseY - mouseYOnMouseDown )
+		};
+
+		function canvasClick() {
+			//console.log(Math.abs(targetYDistance-Y));
+			if(Math.abs(targetYDistance-Y)>5){
+				return false;
+			}
+    	    // 取得画布上被单击的点
+    	    var clickX = TOUCHEND.x;
+    	    var clickY = TOUCHEND.y;
+    	    // 查找被单击的圆圈
+    	    for(var i=list.length-1; i>=0; i--) {
+    	    	if(list[i].click){//可点击
+	    	        // 判断这个点是否在图片范围
+	    	        var img = list[i];
+	    	        var minX = clickX >= img.x - img.width;
+	    	        var maxX = clickX <= img.x + img.width;
+	    	        var minY = clickY >= img.y - img.height + Y;
+	    	        var maxY = clickY <= img.y + img.height + Y;
+	    	        //console.log(minX,maxX,minY,maxY)
+	    	        if (minX && maxX && minY && maxY) {
+	    	        	alert(list[i].name);
+	    	        	return false;
+	    	        }	
+    	    	};
+    	    }
+    	}
+
+		function render() {
+			//console.log(targetYDistance)
+			if(targetYDistance<-4.5*vw+vh){//往后滑动
+				targetYDistance = -4.5*vw+vh;
+			}
+			if(targetYDistance>0){//往前滑动
+				targetYDistance = 0;
+			}
+			Y += (targetYDistance-Y) / DURATION; //获得滑动距离
+
+			ctx.clearRect(0,0,vw,vh);
+
+			for(var i=0;i<list.length;i++){
+				if(list[i].type == "circle"){//测试用 圆
+					list[i].y += (targetYDistance-Y) * list[i].reSpeed / 300;
+					ctx.beginPath();
+					ctx.fillStyle = list[i].color;
+					ctx.arc(list[i].x,list[i].y+Y,list[i].width,0,Math.PI*2,true);
+					ctx.closePath();
+					ctx.fill();
+				}else{//图片
+					ctx.save();//保存状态
+					ctx.beginPath();
+					ctx.translate(vw,0);
+					ctx.rotate(90*Math.PI/180);
+        			ctx.drawImage(list[i].img,list[i].x+Y,list[i].y,list[i].width,list[i].height);
+					ctx.restore();//恢复状态
+				}
+			}
+		};
+
+
+		canvas.addEventListener('touchstart', down, false);
+		(function() {//启动动画
+			requestAnimationFrame( arguments.callee );
+			render();
+		}());
+		/*pop_box.onclick = function(){
+			pop.style.display = 'none';
+		}*/
+
+	</script>
+</html>
