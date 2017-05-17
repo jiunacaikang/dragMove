@@ -129,24 +129,27 @@
 		var targetYDistance = 0;
 		var targetYDistanceOnMouseDown = 0;
 
-		function down (event){
+
+		canvas.addEventListener('touchstart', start, false);
+
+		function start(event) {//touchstart
 			event.preventDefault();
 			TOUCHEND = {x:event.touches[0].clientX,y:event.touches[0].clientY};//获取end点坐标
 
 			canvas.addEventListener( 'touchmove', move, false );
-			canvas.addEventListener( 'touchend', canvasClick, false );
+			canvas.addEventListener( 'touchend', end, false );
 
 			mouseYOnMouseDown = event.touches[0].clientY - canvasHalfY;//鼠标按下y坐标 - canvasHalfX
 			targetYDistanceOnMouseDown = targetYDistance;//保存滑动距离
 			
 		};
 
-		function move( event ) {
+		function move(event) {//touchmove
 			mouseY = event.touches[0].clientY - canvasHalfY; //鼠标移动时 y坐标 - canvasHalfX
 			targetYDistance = targetYDistanceOnMouseDown + ( mouseY - mouseYOnMouseDown );//滑动距离
 		};
 
-		function canvasClick() {
+		function end() {//touchend
 			//console.log(Math.abs(targetYDistance-Y));
 			if(Math.abs(targetYDistance-Y)>5){
 				return false;
@@ -218,8 +221,6 @@
 			}
 		};
 
-
-		canvas.addEventListener('touchstart', down, false);
 		(function() {//启动动画
 			requestAnimationFrame( arguments.callee );
 			render();
