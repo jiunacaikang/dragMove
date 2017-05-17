@@ -55,76 +55,75 @@
 		var vh = window.innerHeight;
 		var DURATION = 10,Y = 0;
 		var TOUCHEND = {};
-		var list = [{
-			img:document.getElementById("bg"),
-			x:0,
-			y:0,
-			width:4.5*vw,
-			height:vw,
-			reSpeed:15,
-			name:"bg",
-			click:false
-		},{
-			x:2*vw/3,
-			y:2*vh/3,
-			width:65,
-			height:65,
-			reSpeed:-5,
-			color:"pink",
-			name:"big",
-			click:true,
-			type:"circle"
-		},{
-			x:vw/4,
-			y:7*vh/8,
-			width:40,
-			height:40,
-			reSpeed:40,
-			color:"red",
-			name:"small",
-			click:true,
-			type:"circle"
-		},{
-			x:vw/2,
-			y:7*vh/3,
-			width:50,
-			height:50,
-			reSpeed:50,
-			color:"green",
-			name:"center",
-			click:true,
-			type:"circle"
-		},{
-			x:vw/2,
-			y:3*vh,
-			width:45,
-			height:45,
-			reSpeed:35,
-			color:"blue",
-			name:"last",
-			click:false,
-			type:"circle"
-		},{
-			x:vw/2,
-			y:8*vw,
-			width:10,
-			height:10,
-			reSpeed:50,
-			color:"aqua",
-			name:"little",
-			click:true,
-			type:"circle"
-		}]
+		var list = [
+			{
+				img:document.getElementById("bg"),
+				x:0,
+				y:0,
+				width:4.5*vw,
+				height:vw,
+				reSpeed:15,
+				name:"bg",
+				click:false
+			},{
+				x:2*vw/3,
+				y:2*vh/3,
+				width:65,
+				height:65,
+				reSpeed:-5,
+				color:"pink",
+				name:"big",
+				click:true,
+				type:"circle"
+			},{
+				x:vw/4,
+				y:7*vh/8,
+				width:40,
+				height:40,
+				reSpeed:40,
+				color:"red",
+				name:"small",
+				click:true,
+				type:"circle"
+			},{
+				x:vw/2,
+				y:7*vh/3,
+				width:50,
+				height:50,
+				reSpeed:50,
+				color:"green",
+				name:"center",
+				click:true,
+				type:"circle"
+			},{
+				x:vw/2,
+				y:3*vh,
+				width:45,
+				height:45,
+				reSpeed:35,
+				color:"blue",
+				name:"last",
+				click:false,
+				type:"circle"
+			},{
+				x:vw/2,
+				y:8*vw,
+				width:10,
+				height:10,
+				reSpeed:50,
+				color:"aqua",
+				name:"little",
+				click:true,
+				type:"circle"
+			}
+		];
 
 
-		var canvas = document.getElementById("canvas");
+		var canvas = document.getElementById("canvas"),ctx = canvas.getContext("2d");
 		canvas.width = vw;
 		canvas.height = vh;
-		var ctx = canvas.getContext("2d");
 
-		var canvasHalfX = canvas.width/2;
 		var canvasHalfY = canvas.height/2;
-
 		var mouseY = 0;
 		var mouseYOnMouseDown = 0;
 		var targetYDistance = 0;
@@ -132,19 +131,19 @@
 
 		function down (event){
 			event.preventDefault();
-			TOUCHEND = {x:event.touches[0].clientX,y:event.touches[0].clientY};
+			TOUCHEND = {x:event.touches[0].clientX,y:event.touches[0].clientY};//获取end点坐标
 
 			canvas.addEventListener( 'touchmove', move, false );
 			canvas.addEventListener( 'touchend', canvasClick, false );
 
-			mouseYOnMouseDown = event.touches[0].clientY - canvasHalfX;
-			targetYDistanceOnMouseDown = targetYDistance;
+			mouseYOnMouseDown = event.touches[0].clientY - canvasHalfY;//鼠标按下y坐标 - canvasHalfX
+			targetYDistanceOnMouseDown = targetYDistance;//保存滑动距离
 			
 		};
 
 		function move( event ) {
-			mouseY = event.touches[0].clientY - canvasHalfX;
-			targetYDistance = targetYDistanceOnMouseDown + ( mouseY - mouseYOnMouseDown )
+			mouseY = event.touches[0].clientY - canvasHalfY; //鼠标移动时 y坐标 - canvasHalfX
+			targetYDistance = targetYDistanceOnMouseDown + ( mouseY - mouseYOnMouseDown );//滑动距离
 		};
 
 		function canvasClick() {
@@ -166,11 +165,27 @@
 	    	        var maxY = clickY <= img.y + img.height + Y;
 	    	        //console.log(minX,maxX,minY,maxY)
 	    	        if (minX && maxX && minY && maxY) {
-	    	        	alert(list[i].name);
+	    	        	clickFns[list[i].name]&&clickFns[list[i].name]();
 	    	        	return false;
 	    	        }	
     	    	};
     	    }
+    	}
+
+    	//可点击钩子函数
+    	var clickFns = {
+    		big:function(){
+    			alert("big_");
+    		},
+    		center:function(){
+    			alert("center_");
+    		},
+    		small:function(){
+    			alert("small_");
+    		},
+    		little:function(){
+    			alert("little_");
+    		}
     	}
 
 		function render() {
@@ -195,7 +210,6 @@
 					ctx.fill();
 				}else{//图片
 					ctx.save();//保存状态
-					ctx.beginPath();
 					ctx.translate(vw,0);
 					ctx.rotate(90*Math.PI/180);
         			ctx.drawImage(list[i].img,list[i].x+Y,list[i].y,list[i].width,list[i].height);
